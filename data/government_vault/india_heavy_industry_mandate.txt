@@ -1,0 +1,14 @@
+MINISTRY OF ENVIRONMENT, FOREST AND CLIMATE CHANGE (MoEFCC)
+NOTIFICATION
+New Delhi, January 15, 2026
+
+G.S.R. 42(E).— In exercise of the powers conferred by Section 6 and Section 25 of the Environment (Protection) Act, 1986 (29 of 1986), the Central Government hereby enacts the statutory framework: Mandatory Decarbonization and Emission Cap Rules, 2026.
+
+1. Short Title and Commencement:
+These rules shall be designated as the Industrial Carbon Cap and Regulatory Compliance Directive, 2026, and shall apply to all heavy metallurgical, iron, steel, and chemical manufacturing corporations operating units inside the territory of India.
+
+2. Mandatory Emission Ceilings (Category-A Metallurgical Establishments):
+Every listed industrial entity engaged in bulk steel manufacturing or raw ore processing shall restrict its total standalone operational Greenhouse Gas (GHG) footprint. Standalone Scope 1 Direct Emissions shall not exceed an absolute ceiling limit of 50,000 Metric Tonnes of CO2 equivalent (MTCO2e) within any given reporting fiscal calendar period.
+
+3. Statutory Financial Penalties and Compensation Framework:
+Where an applicable listed enterprise exceeds the maximum permissible statutory allowance of 50,000 MTCO2e as certified via annual auditing parameters, the defaulting entity shall be legally liable to deposit an environmental compensation penalty. The penalty is fixed at an absolute rate equivalent to exactly 5.0% of the company's total gross annual operational revenue for the respective financial period of non-compliance.

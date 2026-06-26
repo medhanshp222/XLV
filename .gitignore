@@ -1,0 +1,17 @@
+# --- Virtual Environments ---
+.venv/
+
+# --- Environment Variables (KEEP YOUR KEYS SAFE!) ---
+.env
+
+# --- Python & Tooling Cache ---
+__pycache__/
+*.pyc
+.pytest_cache/
+.uv/
+
+# --- System & Editor ---
+.DS_Store
+.vscode/
+.idea/
+

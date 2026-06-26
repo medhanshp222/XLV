@@ -1,0 +1,26 @@
+TATA METALLICS LIMITED
+BUSINESS RESPONSIBILITY & SUSTAINABILITY REPORT (BRSR)
+Reporting Period: Financial Year 2025-26
+
+SECTION A: GENERAL DISCLOSURES (TARGET ZONE FOR AGENT 2)
+1. Corporate Identification Number (CIN): L27101WB1990PLC049981
+2. Name of Listed Entity: Tata Metallics Limited
+3. Sector Classification: Heavy Industry - Iron Foundries and Steel Production Sector
+4. Total Annual Gross Operational Revenue (FY 2025-2026): INR 3,200 Crores
+
+[CONTACT & PERSONA DISCLOSURES]
+5. Designated ESG Compliance Officer: Rajesh Sharma
+6. Role/Designation: Chief Sustainability Officer (CSO)
+7. Official Office Email Address: rajesh.sharma@tatametallics.co.in
+8. Direct Office Telephone: +91-22-6665-8282
+9. LinkedIn Profile: https://www.linkedin.com/in/rajesh-sharma-esg-tata
+
+SECTION B: PRINCIPLE 6 – ENVIRONMENTAL METRICS
+Essential Indicators - Energy & Greenhouse Gas (GHG) Footprint:
+
+* Total Standalone Electricity Consumption: 142,500 MWh
+* Standalone Scope 1 Direct Emissions (Gross GHG Footprint): 54,200 Metric Tonnes of CO2 equivalent (MTCO2e)
+* Standalone Scope 2 Indirect Grid Emissions: 11,800 MTCO2e
+
+Management Statement on Performance Variances:
+The entity records a marginal increase in total standalone Scope 1 direct emissions to 54,200 MTCO2e due to structural production line expansions and thermal infrastructure scaling executed during the second and third quarters of the current financial fiscal period.
