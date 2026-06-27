@@ -38,6 +38,31 @@ function createResultField(title, value) {
   return wrapper;
 }
 
+function formatMetricValue(value, unit) {
+  const metricValue = value || "N/A";
+  const metricUnit = unit ? ` ${unit}` : "";
+  return `${metricValue}${metricUnit}`;
+}
+
+function getComplianceBadge(status) {
+  const normalizedStatus = (status || "N/A").toUpperCase();
+  let background = "#e0f2fe";
+  let color = "#0c4a6e";
+
+  if (normalizedStatus === "COMPLIANT") {
+    background = "#dcfce7";
+    color = "#166534";
+  } else if (normalizedStatus === "NON-COMPLIANT") {
+    background = "#fee2e2";
+    color = "#991b1b";
+  } else if (normalizedStatus === "COMPLIANCE OPAQUE - AUDIT REQUIRED") {
+    background = "#fef3c7";
+    color = "#92400e";
+  }
+
+  return `<span style="display:inline-block;padding:0.25rem 0.6rem;border-radius:999px;font-size:0.9rem;font-weight:600;background:${background};color:${color};">${normalizedStatus}</span>`;
+}
+
 function renderResult(data) {
   resultSummary.innerHTML = "";
   resultDetails.innerHTML = "";
@@ -47,10 +72,19 @@ function renderResult(data) {
   const alreadyNotified = data.already_notified;
   currentResult = result;
 
+  const metricName = data.primary_metric_name || result.primary_metric_name || "Metric";
+  const metricValue = data.extracted_metric_value || result.extracted_metric_value || "N/A";
+  const metricUnit = data.metric_unit || result.metric_unit || "";
+  const targetValue = data.numeric_target || result.numeric_target || "N/A";
+  const targetType = data.target_type || result.target_type || "Target";
+  const complianceStatus = data.compliance_status || result.compliance_status || "N/A";
+  const auditReasoning = data.audit_reasoning || result.audit_reasoning || "N/A";
+
   resultSummary.appendChild(createResultField("Company", result.discovered_company));
-  resultSummary.appendChild(createResultField("Emission Metric", result.company_emission_metric));
-  resultSummary.appendChild(createResultField("Compliance Status", result.compliance_status));
-  resultSummary.appendChild(createResultField("Audit Reasoning", result.audit_reasoning));
+  resultSummary.appendChild(createResultField(metricName, formatMetricValue(metricValue, metricUnit)));
+  resultSummary.appendChild(createResultField("Target", `${targetValue}${targetType ? ` (${targetType})` : ""}`));
+  resultSummary.appendChild(createResultField("Compliance Status", getComplianceBadge(complianceStatus)));
+  resultSummary.appendChild(createResultField("Audit Reasoning", auditReasoning));
   resultSummary.appendChild(createResultField("Contact", `${result.cso_name || "N/A"} • ${result.email || "N/A"}`));
 
   const detailsContainer = document.createElement("div");

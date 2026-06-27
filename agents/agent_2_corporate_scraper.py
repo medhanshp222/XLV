@@ -22,11 +22,11 @@ def _extract_pdf_urls(text: str):
 
 class FullCorporateProfile(BaseModel):
     discovered_company: str = Field(description="Name of the company found in the target sector and region.")
-    company_emission_metric: str = Field(description="The exact current GHG emission intensity or CO2 metrics found for this company (e.g., '2.3 tCO2e/tcs'). Use 'N/A' if unknown.")
+    renewable_energy_percentage: str = Field(description="The percentage of the company's total energy consumption that comes from renewable sources. Use 'N/A' if unknown.")
     cso_name: str = Field(description="Full name of the Chief Sustainability Officer or ESG Head. Use 'N/A' if unknown.")
     designation: str = Field(description="Official corporate title/designation.")
     email: str = Field(description="Direct corporate email address or official ESG contact point. Use 'N/A' if missing.")
-    discovery_context: str = Field(description="Brief notes on what was discovered about their emissions and leadership.")
+    discovery_context: str = Field(description="Brief notes on what was discovered about their renewable energy usage and leadership.")
 
 
 def agent_2_corporate_scraper(state: AgentState) -> AgentState:
@@ -49,9 +49,9 @@ def agent_2_corporate_scraper(state: AgentState) -> AgentState:
         f"1. Find a major prominent company in the '{target_sector}' sector operating in '{target_region}'.\n"
         f"2. Execute a two-step plan to gather the best evidence:\n"
         f"   - Step 1: Use the web search tool to find the direct PDF URL for the target company's latest Business Responsibility and Sustainability Report (BRSR) or ESG report. Use specific search terms like '[Company Name] sustainability report 2025 2026 filetype:pdf' or '[Company Name] brsr report pdf'.\n"
-        f"   - Step 2: If you find a direct PDF URL, use the read_sustainability_report tool with that URL and a focused query such as 'What is the company's total Scope 1 and Scope 2 emission intensity or CO2 metric? Return the exact metric and unit.'\n"
+        f"   - Step 2: If you find a direct PDF URL, use the read_sustainability_report tool with that URL and a focused query such as 'What percentage of the company's total energy consumption comes from renewable sources? Return the exact percentage.'\n"
         f"3. Search the web to find their Chief Sustainability Officer (CSO) or Head of ESG name and contact email.\n"
-        f"4. Loop through as many web searches and PDF reads as needed until you have gathered both the emission metric and the contact information, then compile them into the structured schema."
+        f"4. Loop through as many web searches and PDF reads as needed until you have gathered both the renewable energy percentage and the contact information, then compile them into the structured schema."
     )
 
     messages = [HumanMessage(content=prompt_text)]
@@ -72,7 +72,7 @@ def agent_2_corporate_scraper(state: AgentState) -> AgentState:
                     try:
                         pdf_result = read_sustainability_report.invoke({
                             "pdf_url": pdf_url,
-                            "query": "What is the company's total Scope 1 and Scope 2 emission intensity or CO2 metric? Return the exact metric and unit.",
+                            "query": "What percentage of the company's total energy consumption comes from renewable sources? Return the exact percentage.",
                         })
                         messages.append(ToolMessage(content=f"PDF extraction for {pdf_url}: {pdf_result}", tool_call_id=f"manual_pdf:{pdf_url}"))
                     except Exception as exc:
@@ -112,7 +112,11 @@ def agent_2_corporate_scraper(state: AgentState) -> AgentState:
     return {
         **state,
         "discovered_company": final_corporate_profile.discovered_company,
-        "company_emission_metric": final_corporate_profile.company_emission_metric,
+        "primary_metric_name": "renewable_energy_percentage",
+        "numeric_target": "",
+        "target_type": "RCO percentage",
+        "extracted_metric_value": final_corporate_profile.renewable_energy_percentage,
+        "metric_unit": "%",
         "cso_name": final_corporate_profile.cso_name,
         "designation": final_corporate_profile.designation,
         "email": final_corporate_profile.email,
