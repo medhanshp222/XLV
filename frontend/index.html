@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XLV Compliance Prospect</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Compliance Prospect Search</h1>
+        <p>Enter a region and sector to discover companies, gap analysis, compliance status, and outreach drafts.</p>
+      </header>
+
+      <form id="search-form" class="card">
+        <label>
+          Region
+          <input id="region-input" type="text" value="Telangana" required />
+        </label>
+        <label>
+          Sector
+          <input id="sector-input" type="text" value="Steel Manufacturing" required />
+        </label>
+        <button type="submit">Run Search</button>
+      </form>
+
+      <div id="status" class="status"></div>
+
+      <section id="result-section" class="card hidden">
+        <h2>Search Result</h2>
+        <div id="result-content"></div>
+        <div id="action-row" class="action-row hidden">
+          <button id="approve-button">Approve &amp; Save Notification</button>
+        </div>
+      </section>
+
+      <section id="history-section" class="card hidden">
+        <h2>Notification History</h2>
+        <div id="history-content"></div>
+      </section>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
