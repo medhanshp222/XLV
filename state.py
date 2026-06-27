@@ -1,20 +1,28 @@
-# state.py
-from typing import TypedDict, Optional, Dict
+from typing import TypedDict
 
-class AgentState(TypedDict):
-    # Core Global Inputs
+
+class AgentState(TypedDict, total=False):
+    # Inputs
     target_region: str
     target_sector: str
-    company_name: str
-    
-    # Squad 1 (Ingestion Output)
-    raw_laws_text: Optional[str]
-    raw_corporate_report: Optional[str]
-    
-    # Squad 2 (Reasoning & Synthesis Output)
-    compliance_gap_analysis: Optional[str]
-    cso_contact_info: Optional[Dict]
-    final_outreach_draft: Optional[str]
-    
-    # Router State (Tells the Planner who goes next)
+
+    # Agent 1 Outputs (Regulatory)
+    raw_laws_text: str
+
+    # Agent 2 Outputs (Corporate & Prospecting)
+    discovered_company: str
+    company_emission_metric: str
+    cso_name: str
+    designation: str
+    email: str
+    discovery_context: str
+
+    # Agent 3 Outputs (Audit)
+    compliance_status: str
+    audit_reasoning: str
+
+    # Agent 4 Outputs (Outreach)
+    final_outreach_draft: str
+
+    # LangGraph Routing
     next_step: str

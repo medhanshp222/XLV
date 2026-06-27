@@ -1,36 +1,75 @@
-from __future__ import annotations
-
+import os
+from dotenv import load_dotenv
+from langchain_tavily import TavilySearch as TavilySearchResults
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.messages import HumanMessage, ToolMessage
 from state import AgentState
-from services.data_loader import GOVERNMENT_VAULT, is_heavy_industry_sector, read_text
+
+# Load environment variables
+load_dotenv()
+
+
+def _extract_text_content(content: object) -> str:
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for block in content:
+            if isinstance(block, str):
+                parts.append(block)
+            elif isinstance(block, dict):
+                text_value = block.get("text")
+                if isinstance(text_value, str):
+                    parts.append(text_value)
+            else:
+                parts.append(str(block))
+        return "\n".join(part for part in parts if part)
+    return str(content or "")
 
 
 def agent_1_regulatory_tracker(state: AgentState) -> AgentState:
     """
-    Step 1:
-    Uses target_region + target_sector to pull only relevant regulation text
-    from local government vault files.
+    Agent 1: Uses a native web search tool bound to Gemini to discover
+    and parse 2026 environmental mandates.
     """
-    region = state["target_region"].strip().lower()
-    sector = state["target_sector"].strip()
+    llm = ChatGoogleGenerativeAI(
+        model="gemini-3.1-flash-lite",
+        google_api_key=os.getenv("GOOGLE_API_KEY"),
+        temperature=0,
+    )
 
-    raw_laws_text = ""
+    web_search_tool = TavilySearchResults(
+        tavily_api_key=os.getenv("TAVILY_API_KEY"),
+        max_results=3,
+    )
 
-    # Current demo dataset supports India + heavy industry/steel classes.
-    if region == "india" and is_heavy_industry_sector(sector):
-        law_file = GOVERNMENT_VAULT / "india_heavy_industry_mandate.txt"
-        if law_file.exists():
-            raw_laws_text = read_text(law_file)
+    llm_with_tools = llm.bind_tools([web_search_tool])
 
-    next_step = "agent_2_corporate_scraper"
-    if not raw_laws_text:
-        next_step = "stop"
-        raw_laws_text = (
-            f"No local mandate found for region='{state['target_region']}' "
-            f"and sector='{state['target_sector']}'."
-        )
+    prompt = (
+        f"You are a compliance automation bot. Find the official 2026 environmental emission "
+        f"limits, thresholds, or caps for the {state['target_sector']} sector in {state['target_region']}. "
+        f"Use your search tool to fetch real-time data. Summarize the exact numeric limits "
+        f"and provide the legal citation source."
+    )
+
+    messages = [HumanMessage(content=prompt)]
+    response = None
+
+    while True:
+        response = llm_with_tools.invoke(messages)
+        messages.append(response)
+
+        if not getattr(response, "tool_calls", None):
+            break
+
+        for tool_call in response.tool_calls:
+            tool_output = web_search_tool.invoke(tool_call["args"])
+            messages.append(ToolMessage(content=str(tool_output), tool_call_id=tool_call["id"]))
+
+    final_text = _extract_text_content(response.content if response is not None else "")
 
     return {
         **state,
-        "raw_laws_text": raw_laws_text,
-        "next_step": next_step,
+        "raw_laws_text": final_text,
+        "next_step": "agent_2_corporate_scraper",
     }
