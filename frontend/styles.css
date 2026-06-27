@@ -77,6 +77,16 @@ button:hover {
   background: #3730a3;
 }
 
+.secondary-button {
+  background: #f8fafc;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+}
+
+.secondary-button:hover {
+  background: #e2e8f0;
+}
+
 button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -102,6 +112,10 @@ button:disabled {
 
 .action-row {
   margin-top: 18px;
+}
+
+.details-toggle {
+  margin: 16px 0;
 }
 
 .result-grid {

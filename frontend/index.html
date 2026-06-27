@@ -11,7 +11,7 @@
     <div class="container">
       <header>
         <h1>Compliance Prospect Search</h1>
-        <p>Enter a region and sector to discover companies, gap analysis, compliance status, and outreach drafts.</p>
+        <p>Enter a region and sector to get a concise company compliance summary.</p>
       </header>
 
       <form id="search-form" class="card">
@@ -30,7 +30,11 @@
 
       <section id="result-section" class="card hidden">
         <h2>Search Result</h2>
-        <div id="result-content"></div>
+        <div id="result-summary"></div>
+        <div class="details-toggle">
+          <button id="toggle-details-button" type="button" class="secondary-button">Show details</button>
+        </div>
+        <div id="result-details" class="hidden"></div>
         <div id="action-row" class="action-row hidden">
           <button id="approve-button">Approve &amp; Save Notification</button>
         </div>

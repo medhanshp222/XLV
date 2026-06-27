@@ -4,7 +4,9 @@ const regionInput = document.getElementById("region-input");
 const sectorInput = document.getElementById("sector-input");
 const statusBar = document.getElementById("status");
 const resultSection = document.getElementById("result-section");
-const resultContent = document.getElementById("result-content");
+const resultSummary = document.getElementById("result-summary");
+const resultDetails = document.getElementById("result-details");
+const toggleDetailsButton = document.getElementById("toggle-details-button");
 const actionRow = document.getElementById("action-row");
 const approveButton = document.getElementById("approve-button");
 const historySection = document.getElementById("history-section");
@@ -37,24 +39,33 @@ function createResultField(title, value) {
 }
 
 function renderResult(data) {
-  resultContent.innerHTML = "";
+  resultSummary.innerHTML = "";
+  resultDetails.innerHTML = "";
   resultSection.classList.remove("hidden");
 
   const result = data.result;
   const alreadyNotified = data.already_notified;
   currentResult = result;
 
-  resultContent.appendChild(createResultField("Region", result.target_region));
-  resultContent.appendChild(createResultField("Sector", result.target_sector));
-  resultContent.appendChild(createResultField("Company", result.discovered_company));
-  resultContent.appendChild(createResultField("Emission Metric", result.company_emission_metric));
-  resultContent.appendChild(createResultField("CSO Name", result.cso_name));
-  resultContent.appendChild(createResultField("Designation", result.designation));
-  resultContent.appendChild(createResultField("Email", result.email));
-  resultContent.appendChild(createResultField("Compliance Status", result.compliance_status));
-  resultContent.appendChild(createResultField("Audit Reasoning", result.audit_reasoning));
-  resultContent.appendChild(createResultField("Regulatory Findings", result.raw_laws_text));
-  resultContent.appendChild(createResultField("Outreach Draft", result.final_outreach_draft));
+  resultSummary.appendChild(createResultField("Company", result.discovered_company));
+  resultSummary.appendChild(createResultField("Emission Metric", result.company_emission_metric));
+  resultSummary.appendChild(createResultField("Compliance Status", result.compliance_status));
+  resultSummary.appendChild(createResultField("Audit Reasoning", result.audit_reasoning));
+  resultSummary.appendChild(createResultField("Contact", `${result.cso_name || "N/A"} • ${result.email || "N/A"}`));
+
+  const detailsContainer = document.createElement("div");
+  detailsContainer.className = "result-grid";
+  detailsContainer.appendChild(createResultField("Region", result.target_region));
+  detailsContainer.appendChild(createResultField("Sector", result.target_sector));
+  detailsContainer.appendChild(createResultField("CSO Name", result.cso_name));
+  detailsContainer.appendChild(createResultField("Designation", result.designation));
+  detailsContainer.appendChild(createResultField("Email", result.email));
+  detailsContainer.appendChild(createResultField("Regulatory Findings", result.raw_laws_text));
+  detailsContainer.appendChild(createResultField("Outreach Draft", result.final_outreach_draft));
+  resultDetails.appendChild(detailsContainer);
+
+  toggleDetailsButton.textContent = "Show details";
+  resultDetails.classList.add("hidden");
 
   if (alreadyNotified) {
     actionRow.classList.remove("hidden");
@@ -67,6 +78,12 @@ function renderResult(data) {
     approveButton.disabled = false;
     clearStatus();
   }
+}
+
+function toggleResultDetails() {
+  const isHidden = resultDetails.classList.contains("hidden");
+  resultDetails.classList.toggle("hidden");
+  toggleDetailsButton.textContent = isHidden ? "Hide details" : "Show details";
 }
 
 function renderNotifications(notifications) {
@@ -179,4 +196,5 @@ async function approveNotification() {
 
 form.addEventListener("submit", runSearch);
 approveButton.addEventListener("click", approveNotification);
+toggleDetailsButton.addEventListener("click", toggleResultDetails);
 loadHistory();
