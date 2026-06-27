@@ -3,8 +3,9 @@ from typing import TypedDict, Optional, Dict
 
 class AgentState(TypedDict):
     # Core Global Inputs
-    company_name: str
     target_region: str
+    target_sector: str
+    company_name: str
     
     # Squad 1 (Ingestion Output)
     raw_laws_text: Optional[str]
