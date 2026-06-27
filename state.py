@@ -14,6 +14,7 @@ class AgentState(TypedDict):
     # Squad 2 (Reasoning & Synthesis Output)
     compliance_gap_analysis: Optional[str]
     cso_contact_info: Optional[Dict]
+    final_outreach_draft: Optional[str]
     
     # Router State (Tells the Planner who goes next)
     next_step: str
