@@ -1,4 +1,5 @@
 import os
+from typing import Literal
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -10,7 +11,9 @@ load_dotenv(override=True)
 class ComplianceVerdict(BaseModel):
     regulatory_limit_found: str = Field(description="The numeric legal limit or framework rules extracted from the law.")
     reported_metric_found: str = Field(description="The company's current reported metric.")
-    compliance_status: str = Field(description="Strictly 'COMPLIANT' or 'NON-COMPLIANT'.")
+    compliance_status: Literal["COMPLIANT", "NON-COMPLIANT", "COMPLIANCE OPAQUE - AUDIT REQUIRED"] = Field(
+        description="Must be one of: 'COMPLIANT', 'NON-COMPLIANT', or 'COMPLIANCE OPAQUE - AUDIT REQUIRED'."
+    )
     gap_calculation: str = Field(description="The mathematical difference between current reality and the law. State 'N/A' if math isn't possible.")
     verdict_reasoning: str = Field(description="A brief explanation analyzing current performance against the mandate, ignoring future targets.")
 
@@ -34,7 +37,10 @@ def agent_3_gap_analyst(state: AgentState) -> AgentState:
         f"Company Metrics found by Agent 2: {company_metrics_input}\n\n"
         "Task:\n"
         "1. Compare the company's current performance against the regulatory limits or guidelines.\n"
-        "2. Determine if they are currently COMPLIANT or NON-COMPLIANT (ignore their future targets like 2030; look at current data).\n"
+        "2. Apply these rules exactly: \n"
+        "   - If the legal framework says the limits are site-specific, governed by Consent to Operate (CTO/CFO), or if the company metric is 'N/A', classify the result as 'COMPLIANCE OPAQUE - AUDIT REQUIRED'.\n"
+        "   - If the status is 'COMPLIANCE OPAQUE - AUDIT REQUIRED', set gap_calculation to 'N/A' and make the reasoning explicitly note that public reporting lacks the facility-specific baselines required to verify adherence to local CFO mandates.\n"
+        "   - Otherwise, determine if they are currently COMPLIANT or NON-COMPLIANT (ignore their future targets like 2030; look at current data).\n"
         "3. Estimate the gap and write a concise audit verdict."
     )
 

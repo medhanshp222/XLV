@@ -1,9 +1,17 @@
+from langchain_core.tools import tool
 from langgraph.graph import StateGraph, START, END
 from state import AgentState
 from agents.agent_1_regulatory import agent_1_regulatory_tracker
 from agents.agent_2_corporate_scraper import agent_2_corporate_scraper
 from agents.agent_3_gap_analyst import agent_3_gap_analyst
 from agents.agent_4_outreach_drafter import agent_4_outreach_drafter
+from agents.pdf_reader import extract_metric_from_pdf
+
+
+@tool
+def read_sustainability_report(pdf_url: str, query: str) -> str:
+    """Use this tool when you have found an online PDF URL and need to extract an emission metric from it."""
+    return extract_metric_from_pdf(pdf_url, query)
 
 workflow = StateGraph(AgentState)
 
