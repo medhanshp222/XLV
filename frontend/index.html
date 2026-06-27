@@ -8,42 +8,73 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="container">
-      <header>
-        <h1>Compliance Prospect Search</h1>
-        <p>Enter a region and sector to get a concise company compliance summary.</p>
-      </header>
+    <div class="page-shell">
+      <div class="container">
+        <header class="hero-card">
+          <div>
+            <p class="eyebrow">XLV Compliance</p>
+            <h1>Discover compliance prospects fast.</h1>
+            <p class="hero-copy">Search by region and sector to reveal the top company, compliance gap, and outreach readiness in one dashboard.</p>
+          </div>
+          <div class="hero-badge">Build smarter outreach with a single click</div>
+        </header>
 
-      <form id="search-form" class="card">
-        <label>
-          Region
-          <input id="region-input" type="text" value="Telangana" required />
-        </label>
-        <label>
-          Sector
-          <input id="sector-input" type="text" value="Steel Manufacturing" required />
-        </label>
-        <button type="submit">Run Search</button>
-      </form>
+        <section class="grid-layout">
+          <div class="card form-card">
+            <div class="card-heading">
+              <h2>Run a search</h2>
+              <p>Choose the target geography and industry.</p>
+            </div>
+            <form id="search-form">
+              <label>
+                Region
+                <input id="region-input" type="text" value="Telangana" required />
+              </label>
+              <label>
+                Sector
+                <input id="sector-input" type="text" value="Steel Manufacturing" required />
+              </label>
+              <button type="submit">Run Search</button>
+            </form>
+          </div>
 
-      <div id="status" class="status"></div>
+          <div class="card status-card">
+            <div class="status-icon">⚡</div>
+            <div>
+              <p class="status-label">Pipeline status</p>
+              <div id="status" class="status"></div>
+            </div>
+          </div>
+        </section>
 
-      <section id="result-section" class="card hidden">
-        <h2>Search Result</h2>
-        <div id="result-summary"></div>
-        <div class="details-toggle">
-          <button id="toggle-details-button" type="button" class="secondary-button">Show details</button>
-        </div>
-        <div id="result-details" class="hidden"></div>
-        <div id="action-row" class="action-row hidden">
-          <button id="approve-button">Approve &amp; Save Notification</button>
-        </div>
-      </section>
+        <section id="result-section" class="card hidden">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Results</p>
+              <h2>Compliance overview</h2>
+            </div>
+            <button id="toggle-details-button" type="button" class="secondary-button">Show details</button>
+          </div>
 
-      <section id="history-section" class="card hidden">
-        <h2>Notification History</h2>
-        <div id="history-content"></div>
-      </section>
+          <div id="result-summary" class="summary-grid"></div>
+
+          <div id="result-details" class="hidden details-grid"></div>
+
+          <div id="action-row" class="action-row hidden">
+            <button id="approve-button">Approve &amp; Save Notification</button>
+          </div>
+        </section>
+
+        <section id="history-section" class="card hidden">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">History</p>
+              <h2>Saved notifications</h2>
+            </div>
+          </div>
+          <div id="history-content" class="history-grid"></div>
+        </section>
+      </div>
     </div>
 
     <script src="app.js"></script>
