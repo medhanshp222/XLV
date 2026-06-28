@@ -30,9 +30,19 @@ def _extract_text_content(content: object) -> str:
 def agent_1_regulatory_tracker(state: AgentState) -> AgentState:
     """
     Agent 1: Uses a native web search tool bound to Gemini to discover
-    and parse India's FY 2026-27 Renewable Consumption Obligation (RCO)
-    and Energy Storage Obligation (ESO) mandates.
+    and parse the regulatory target for the user-requested sustainability metric.
     """
+    metric_results = state.get("metric_results", []) or []
+    metric_names = [
+        metric.get("metric_name")
+        for metric in metric_results
+        if isinstance(metric, dict) and metric.get("metric_name")
+    ]
+    target_metrics = ", ".join(metric_names) if metric_names else (
+        "Scope 1 & 2 GHG Emissions (tCO2e), Energy Intensity (GJ/tcs), "
+        "Water Intensity (m3/tcs), Hazardous Waste Generation (MT)"
+    )
+
     llm = ChatGoogleGenerativeAI(
         model="gemini-3.1-flash-lite",
         google_api_key=os.getenv("GOOGLE_API_KEY"),
@@ -47,12 +57,13 @@ def agent_1_regulatory_tracker(state: AgentState) -> AgentState:
     llm_with_tools = llm.bind_tools([web_search_tool])
 
     prompt = (
-        "You are a compliance automation bot focused on India's power-sector compliance mandates. "
-        f"Find the official Renewable Consumption Obligation (RCO) and Energy Storage Obligation (ESO) "
-        "percentage targets mandated by the Ministry of Power for the current fiscal year FY 2026-27. "
-        f"For the {state['target_sector']} sector context, use the official India policy sources and extract the exact numeric percentages clearly, "
-        "for example: 'RCO target: 35.95%, ESO target: 2.5%'. "
-        "Summarize the exact targets and provide the legal citation source."
+        "You are a targeted regulatory researcher for sustainability compliance. "
+        f"You must find current, legally binding regulatory targets or mandates for these metrics: {target_metrics} "
+        f"in the {state['target_sector']} sector for {state['target_region']}. "
+        "Use official government, statutory, or authoritative regulatory sources, and extract the exact numeric target or mandate if available. "
+        "If the regulation is expressed as a percentage, intensity, or other unit, preserve the unit explicitly. "
+        "Use exact formal terminology used in statutory ESG reporting frameworks (like BRSR), not generic terms. "
+        "Summarize each metric's target/mandate, legal basis, and citation source."
     )
 
     messages = [HumanMessage(content=prompt)]

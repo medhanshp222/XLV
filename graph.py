@@ -5,13 +5,19 @@ from agents.agent_1_regulatory import agent_1_regulatory_tracker
 from agents.agent_2_corporate_scraper import agent_2_corporate_scraper
 from agents.agent_3_gap_analyst import agent_3_gap_analyst
 from agents.agent_4_outreach_drafter import agent_4_outreach_drafter
-from agents.pdf_reader import extract_metric_from_pdf
+from agents.pdf_reader import extract_metric_from_pdf, read_sustainability_report_by_page as extract_page_text_from_pdf
 
 
 @tool
 def read_sustainability_report(pdf_url: str, query: str) -> str:
     """Use this tool when you have found an online PDF URL and need to extract an emission metric from it."""
     return extract_metric_from_pdf(pdf_url, query)
+
+
+@tool
+def read_sustainability_report_by_page(page_number: int) -> str:
+    """Use this tool when you need the full text of a specific cached PDF page."""
+    return extract_page_text_from_pdf(page_number)
 
 workflow = StateGraph(AgentState)
 
