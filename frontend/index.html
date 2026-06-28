@@ -13,10 +13,15 @@
         <header class="hero-card">
           <div>
             <p class="eyebrow">XLV Compliance</p>
-            <h1>Discover compliance prospects fast.</h1>
-            <p class="hero-copy">Search by region and sector to reveal the top company, compliance gap, and outreach readiness in one dashboard.</p>
+            <h1>Find the highest-risk compliance prospects, then send outreach with confidence.</h1>
+            <p class="hero-copy">Run a regional sector search to surface the exact company, risk issue, and email-ready outreach recommendation in one modern dashboard.</p>
+            <ul class="hero-features">
+              <li>Identify key regulatory gaps</li>
+              <li>Preview outreach before sending</li>
+              <li>Control recipient and sender details</li>
+            </ul>
           </div>
-          <div class="hero-badge">Build smarter outreach with a single click</div>
+          <div class="hero-badge">Ready-to-send email workflow</div>
         </header>
 
         <section class="grid-layout">
@@ -59,6 +64,47 @@
           <div id="result-summary" class="summary-grid"></div>
 
           <div id="result-details" class="hidden details-grid"></div>
+
+          <div id="email-preview" class="hidden email-preview">
+            <div class="preview-header">
+              <div>
+                <h3>Email preview</h3>
+                <p class="preview-description">Review the message before sending. Edit the recipient or sender address as needed.</p>
+              </div>
+              <button id="regenerate-button" type="button" class="secondary-button">Regenerate Email</button>
+            </div>
+            <div class="email-grid">
+              <div class="email-field email-input-field">
+                <label for="preview-sender-input">From</label>
+                <input id="preview-sender-input" type="email" placeholder="your@company.com" class="email-input" />
+              </div>
+              <div class="email-field email-input-field">
+                <label for="preview-recipient-input">To</label>
+                <input id="preview-recipient-input" type="email" placeholder="recipient@example.com" class="email-input" />
+              </div>
+              <div class="email-field email-input-field full-width">
+                <label>Subject</label>
+                <div id="preview-subject">N/A</div>
+              </div>
+            </div>
+            <div class="email-metadata">
+              <div class="email-meta-card">
+                <strong>Why we are sending</strong>
+                <p id="preview-why-send">N/A</p>
+              </div>
+              <div class="email-meta-card">
+                <strong>Major issue</strong>
+                <p id="preview-major-issue">N/A</p>
+              </div>
+            </div>
+            <div class="email-field email-body">
+              <strong>Body</strong>
+              <div id="preview-body">N/A</div>
+            </div>
+            <div class="preview-actions">
+              <button id="send-email-button" class="primary-button">Send Email</button>
+            </div>
+          </div>
 
           <div id="action-row" class="action-row hidden">
             <button id="approve-button">Approve &amp; Save Notification</button>

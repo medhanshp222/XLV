@@ -23,6 +23,8 @@ class AgentState(TypedDict, total=False):
 
     # Agent 4 Outputs (Outreach)
     final_outreach_draft: str
+    outreach_email_subject: str
+    outreach_email_body: str
 
     # LangGraph Routing
     next_step: str

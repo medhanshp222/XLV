@@ -1,4 +1,7 @@
+import json
 import os
+from typing import Any
+
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from state import AgentState
@@ -6,49 +9,79 @@ from state import AgentState
 load_dotenv(override=True)
 
 
-def agent_4_outreach_drafter(state: AgentState) -> AgentState:
+def _extract_text(response: Any) -> str:
+    text = response.content
+    if isinstance(text, list):
+        text = "".join(
+            block.get("text", "") for block in text if isinstance(block, dict)
+        )
+    return str(text or "").strip()
+
+
+def _parse_json(text: str) -> dict:
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        # If the model returns surrounding text, attempt to extract the first JSON block.
+        start = text.find("{")
+        end = text.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            try:
+                return json.loads(text[start : end + 1])
+            except json.JSONDecodeError:
+                pass
+    return {}
+
+
+def _build_prompt(state: AgentState) -> str:
+    return (
+        "You are an expert enterprise sales copywriter specializing in ESG and corporate compliance software.\n"
+        "Use the context below to create a polished outreach email.\n\n"
+        "Context:\n"
+        f"- Target Company: {state.get('discovered_company', '')}\n"
+        f"- Recipient Name: {state.get('cso_name', '')}\n"
+        f"- Recipient Title: {state.get('designation', '')}\n"
+        f"- New Regulation: {state.get('raw_laws_text', '')}\n"
+        f"- Audit Status: {state.get('compliance_status', '')}\n"
+        f"- Audit Rationale: {state.get('audit_reasoning', '')}\n\n"
+        "Requirements:\n"
+        "1. Write a subject line no longer than 80 characters.\n"
+        "2. Write an HTML email body with short paragraphs and professional tone.\n"
+        "3. Mention the Indian Carbon Market and unit-specific intensity baselining.\n"
+        "4. Keep the email consultative and avoid sounding alarmist.\n"
+        "5. Return only valid JSON with keys: subject, body.\n"
+        "Example response:\n"
+        "{\n"
+        "  \"subject\": \"...\",\n"
+        "  \"body\": \"<p>...</p>\"\n"
+        "}\n"
+    )
+
+
+def _create_outreach_email(state: AgentState) -> tuple[str, str, str]:
     llm_agent4 = ChatGoogleGenerativeAI(
         model="gemini-3.1-flash-lite",
         google_api_key=os.getenv("GOOGLE_API_KEY"),
         temperature=0.7,
     )
 
-    company_name = state["discovered_company"]
-    cso_name = state["cso_name"]
-    cso_title = state["designation"]
-    framework_rules = state["raw_laws_text"]
-    audit_verdict = state["compliance_status"]
-    audit_reasoning = state["audit_reasoning"]
-
-    prompt_text = (
-        "You are an expert enterprise sales copywriter specializing in ESG and corporate compliance software.\n"
-        "Your goal is to draft a highly professional, cold outreach email to a corporate executive.\n\n"
-        "Context Given:\n"
-        f"- Target Company: {company_name}\n"
-        f"- Recipient Name: {cso_name}\n"
-        f"- Recipient Title: {cso_title}\n"
-        f"- New Regulation: {framework_rules}\n"
-        f"- Audit Status: {audit_verdict}\n"
-        f"- Audit Rationale: {audit_reasoning}\n\n"
-        "Guidelines:\n"
-        "1. Keep it professional, consultative, and respectful. Do not sound alarmist or like you are accusing them.\n"
-        "2. Explicitly reference the newly transitioning Indian Carbon Market (ICM) intensity targets.\n"
-        "3. Highlight that tracking unit-specific baselines dynamically can be challenging.\n"
-        "4. Since direct email was N/A, add a small placeholder note at the top indicating this should be sent via LinkedIn message if needed.\n"
-        "5. Pitch an introductory call to showcase how our automated compliance platform handles dynamic intensity forecasting."
-    )
-
+    prompt_text = _build_prompt(state)
     response = llm_agent4.invoke(prompt_text)
+    extracted = _extract_text(response)
+    parsed = _parse_json(extracted)
 
-    # Safely extract the string if Gemini returns a list block
-    draft_content = response.content
-    if isinstance(draft_content, list):
-        draft_content = "".join([
-            block.get("text", "") for block in draft_content if isinstance(block, dict) and "text" in block
-        ])
+    subject = parsed.get("subject", f"Improve ESG compliance for {state.get('discovered_company', '').strip()}")
+    body = parsed.get("body", extracted)
 
+    return subject, body, extracted
+
+
+def agent_4_outreach_drafter(state: AgentState) -> AgentState:
+    subject, body, draft_content = _create_outreach_email(state)
     return {
         **state,
         "final_outreach_draft": draft_content,
+        "outreach_email_subject": subject,
+        "outreach_email_body": body,
         "next_step": "end",
     }
