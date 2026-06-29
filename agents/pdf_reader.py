@@ -28,6 +28,19 @@ def read_sustainability_report_by_page(page_number: int):
         return ""
     return documents[page_number].page_content or ""
 
+
+def extract_all_pdf_pages():
+    if not _CURRENT_TEMP_PDF_PATH or not os.path.exists(_CURRENT_TEMP_PDF_PATH):
+        return []
+
+    loader = PyPDFLoader(_CURRENT_TEMP_PDF_PATH)
+    documents = loader.load()
+    return [
+        {"page": index + 1, "text": document.page_content or ""}
+        for index, document in enumerate(documents)
+    ]
+
+
 def extract_metric_from_pdf(pdf_url: str, query: str):
     global _CURRENT_TEMP_PDF_PATH
     temp_pdf_path = None

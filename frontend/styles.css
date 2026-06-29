@@ -18,34 +18,42 @@ body {
   min-height: 100vh;
   background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.18), transparent 35%),
     radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.15), transparent 28%),
-    linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+    linear-gradient(180deg, #f7f9fe 0%, #eef4ff 100%);
 }
 
 .page-shell {
   min-height: 100vh;
-  padding: 32px 16px 48px;
+  padding: 32px 16px 52px;
 }
 
 .container {
-  max-width: 1080px;
+  max-width: 1120px;
   margin: 0 auto;
 }
 
 .hero-card,
 .card {
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 28px;
-  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 32px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
 }
 
 .hero-card {
   display: grid;
-  gap: 24px;
-  padding: 40px 36px;
-  margin-bottom: 28px;
+  gap: 20px;
+  padding: 42px 36px;
+  margin-bottom: 32px;
   position: relative;
   overflow: hidden;
+}
+
+.hero-card h1 {
+  font-size: clamp(2.2rem, 2.8vw, 3.4rem);
+}
+
+.hero-copy {
+  max-width: 62ch;
 }
 
 .hero-card::before {
@@ -170,12 +178,17 @@ button {
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
 }
 
 button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 18px 35px rgba(67, 56, 202, 0.18);
+  box-shadow: 0 16px 30px rgba(67, 56, 202, 0.18);
+}
+
+button:focus-visible {
+  outline: 3px solid rgba(59, 130, 246, 0.32);
+  outline-offset: 2px;
 }
 
 .secondary-button {
@@ -199,28 +212,30 @@ button:disabled {
 .status-card {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 20px;
   min-height: 180px;
+  padding: 28px;
 }
 
 .status-icon {
-  width: 62px;
-  height: 62px;
+  width: 68px;
+  height: 68px;
   display: grid;
   place-items: center;
-  border-radius: 18px;
-  background: rgba(59, 130, 246, 0.15);
-  font-size: 1.7rem;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(99, 102, 241, 0.08));
+  font-size: 1.8rem;
 }
 
 .status {
   display: block;
-  padding: 16px 18px;
-  border-radius: 18px;
+  padding: 18px 20px;
+  border-radius: 22px;
   font-size: 1rem;
-  background: rgba(236, 253, 245, 0.8);
+  background: rgba(236, 253, 245, 0.9);
   color: #115e59;
   margin-top: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.18);
 }
 
 .hidden {
@@ -242,6 +257,12 @@ button:disabled {
   gap: 18px;
 }
 
+.summary-meta {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
 .summary-grid {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
@@ -252,6 +273,206 @@ button:disabled {
 
 .history-grid {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.result-grid-layout {
+  display: grid;
+  gap: 28px;
+  grid-template-columns: minmax(0, 1.5fr) minmax(360px, 1fr);
+  align-items: start;
+}
+
+.result-main {
+  display: grid;
+  gap: 24px;
+}
+
+.result-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.summary-meta {
+  display: grid;
+  gap: 18px;
+}
+
+.draft-card {
+  padding: 24px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #ffffff 0%, #eef4ff 100%);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-left: 4px solid rgba(67, 56, 202, 0.24);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  min-height: 220px;
+}
+
+.draft-card h3 {
+  margin: 0 0 12px;
+  font-size: 1.15rem;
+  color: #1e293b;
+  letter-spacing: 0.01em;
+}
+
+.draft-card pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: #334155;
+  background: rgba(248, 250, 255, 0.95);
+  border-radius: 18px;
+  padding: 18px;
+  min-height: 150px;
+}
+
+.pdf-sidebar {
+  position: sticky;
+  top: 28px;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  box-shadow: 0 22px 60px rgba(99, 102, 241, 0.1);
+  max-height: calc(100vh - 120px);
+  overflow: hidden;
+}
+
+.pdf-sidebar .pdf-pages {
+  flex: 1;
+  min-height: 0;
+}
+
+.pdf-sidebar-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.pdf-sidebar-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #1e293b;
+}
+
+.pdf-meta {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.pdf-meta > div {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.pdf-meta strong {
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+.pdf-url-link a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.pdf-url-link a:hover {
+  text-decoration: underline;
+}
+
+.pdf-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.pdf-chip,
+.pdf-chip-button {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.12);
+  color: #1e293b;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+}
+
+.pdf-chip-button {
+  background: rgba(59, 130, 246, 0.12);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.pdf-chip-button:hover {
+  background: rgba(59, 130, 246, 0.18);
+  transform: translateY(-1px);
+}
+
+.pdf-page-active {
+  outline: 2px solid rgba(59, 130, 246, 0.4);
+  background: rgba(229, 231, 255, 0.95);
+}
+
+.draft-note {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(236, 253, 245, 0.92);
+  color: #0f5132;
+  border: 1px solid rgba(16, 185, 129, 0.18);
+}
+
+.pdf-section-title {
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4338ca;
+  margin-bottom: 14px;
+}
+
+.pdf-pages {
+  display: grid;
+  gap: 16px;
+  max-height: 640px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.pdf-page {
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.pdf-page-number {
+  margin-bottom: 12px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.pdf-page-text {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #334155;
+  background: rgba(248, 250, 255, 0.9);
+  border-radius: 16px;
+  padding: 16px;
+  max-height: 260px;
+  overflow-y: auto;
 }
 
 .result-item,
@@ -270,6 +491,71 @@ button:disabled {
   color: #0f172a;
 }
 
+.insight-card {
+  grid-column: 1 / -1;
+  padding: 24px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, #eef2ff 0%, #ffffff 100%);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  box-shadow: 0 24px 70px rgba(99, 102, 241, 0.12);
+  display: grid;
+  gap: 16px;
+}
+
+.insight-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.insight-header h3 {
+  margin: 0;
+  font-size: 1.35rem;
+  color: #1e293b;
+}
+
+.insight-score {
+  font-weight: 700;
+  color: #4338ca;
+}
+
+.insight-meter {
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.12);
+  overflow: hidden;
+}
+
+.insight-meter span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #4338ca, #2563eb);
+  border-radius: 999px;
+}
+
+.insight-card p {
+  margin: 0;
+  color: #334155;
+  line-height: 1.7;
+}
+
+.insight-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.insight-chip {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.1);
+  color: #1e293b;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .result-item div,
 .notification-hit div {
   color: #475569;
@@ -284,11 +570,36 @@ button:disabled {
   margin-top: 20px;
 }
 
+@media (max-width: 1100px) {
+  .result-grid-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1100px) {
+  .result-grid-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 880px) {
   .grid-layout,
   .details-grid,
   .summary-grid,
   .history-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pdf-sidebar {
+    max-height: none;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .status-card {
+    min-height: auto;
   }
 }

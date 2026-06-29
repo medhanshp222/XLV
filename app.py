@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from graph import app as compliance_app
@@ -104,3 +105,6 @@ def api_approve(request: ApproveRequest) -> Dict[str, Any]:
         source=request.source or "manual_approval",
     )
     return {"status": "recorded", "notification": notification}
+
+
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")

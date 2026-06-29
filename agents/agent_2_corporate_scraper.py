@@ -70,6 +70,7 @@ class FullCorporateProfile(BaseModel):
 
 def agent_2_corporate_scraper(state: AgentState) -> AgentState:
     from graph import read_sustainability_report, read_sustainability_report_by_page
+    from agents.pdf_reader import extract_all_pdf_pages
 
     # Ensure this matches the model you have quota for
     llm_agent2 = ChatGoogleGenerativeAI(
@@ -87,6 +88,8 @@ def agent_2_corporate_scraper(state: AgentState) -> AgentState:
 
     target_sector = state["target_sector"]
     target_region = state["target_region"]
+    company_report_pdf_url = ""
+    company_report_pages = []
     
     dynamic_audit_query = (
         "You are an ESG auditor. Extract the current-year values for ALL of these metrics from the same report: "
@@ -128,7 +131,8 @@ def agent_2_corporate_scraper(state: AgentState) -> AgentState:
                     pdf_url = tool_call.get("args", {}).get("pdf_url")
                     query = tool_call.get("args", {}).get("query")
                     tool_output = read_sustainability_report.invoke({"pdf_url": pdf_url, "query": query})
-                    
+                    company_report_pdf_url = pdf_url or company_report_pdf_url
+                    company_report_pages = extract_all_pdf_pages()
                 else:
                     tool_output = web_search_tool_agent2.invoke(tool_call["args"])
             except Exception as exc:
@@ -227,6 +231,9 @@ def agent_2_corporate_scraper(state: AgentState) -> AgentState:
         "discovered_company": final_corporate_profile.discovered_company,
         "reporting_year": final_corporate_profile.reporting_year,
         "metric_results": [metric.model_dump() for metric in final_corporate_profile.extracted_metrics],
+        "company_report_pdf_url": company_report_pdf_url,
+        "company_report_pages": company_report_pages,
+        "company_report_source_pages": successful_pages,
         "cso_name": final_corporate_profile.cso_name,
         "designation": final_corporate_profile.designation,
         "email": final_corporate_profile.email,

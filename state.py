@@ -15,6 +15,9 @@ class AgentState(TypedDict, total=False):
     discovered_company: str
     reporting_year: str
     metric_results: List[Dict[str, Any]]
+    company_report_pdf_url: str
+    company_report_pages: List[Dict[str, Any]]
+    company_report_source_pages: List[int]
     cso_name: str
     designation: str
     email: str

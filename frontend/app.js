@@ -1,4 +1,4 @@
-const apiBase = "http://localhost:8000";
+const apiBase = "";
 const form = document.getElementById("search-form");
 const regionInput = document.getElementById("region-input");
 const sectorInput = document.getElementById("sector-input");
@@ -6,6 +6,8 @@ const statusBar = document.getElementById("status");
 const resultSection = document.getElementById("result-section");
 const resultSummary = document.getElementById("result-summary");
 const resultDetails = document.getElementById("result-details");
+const pdfSidebar = document.getElementById("pdf-sidebar");
+const draftCard = document.getElementById("draft-card");
 const toggleDetailsButton = document.getElementById("toggle-details-button");
 const actionRow = document.getElementById("action-row");
 const approveButton = document.getElementById("approve-button");
@@ -34,8 +36,126 @@ function clearStatus() {
 function createResultField(title, value) {
 	const wrapper = document.createElement("div");
 	wrapper.className = "result-item";
-	wrapper.innerHTML = `<strong>${title}</strong><div>${value || "N/A"}</div>`;
+	const strong = document.createElement("strong");
+	strong.textContent = title;
+	const valueWrapper = document.createElement("div");
+	if (typeof value === "string" && value.startsWith("<span")) {
+		valueWrapper.innerHTML = value;
+	} else {
+		valueWrapper.textContent = value || "N/A";
+	}
+	wrapper.appendChild(strong);
+	wrapper.appendChild(valueWrapper);
 	return wrapper;
+}
+
+function escapeHtml(value) {
+	const div = document.createElement("div");
+	div.textContent = value || "";
+	return div.innerHTML;
+}
+
+function renderPdfSidebar(result) {
+	pdfSidebar.innerHTML = "";
+
+	const pdfUrl = result.company_report_pdf_url || "";
+	const sourcePages = result.company_report_source_pages || [];
+	const pages = result.company_report_pages || [];
+
+	const header = document.createElement("div");
+	header.className = "pdf-sidebar-header";
+	header.innerHTML = `
+		<div>
+			<p class="eyebrow">Downloaded report</p>
+			<h3>${result.discovered_company || "Company report"}</h3>
+		</div>
+	`;
+	pdfSidebar.appendChild(header);
+
+	const meta = document.createElement("div");
+	meta.className = "pdf-meta";
+	meta.innerHTML = `
+		<div><strong>Report URL</strong><div class="pdf-url-link">${pdfUrl ? `<a href="${escapeHtml(pdfUrl)}" target="_blank" rel="noreferrer">Open PDF source</a>` : "Not available"}</div></div>
+		<div><strong>Loaded pages</strong><div>${pages.length}</div></div>
+		<div><strong>Agent 2 source pages</strong><div>${sourcePages.length ? sourcePages.join(", ") : "None detected"}</div></div>
+	`;
+	pdfSidebar.appendChild(meta);
+
+	const pagesLabel = document.createElement("div");
+	pagesLabel.className = "pdf-section-title";
+	pagesLabel.textContent = "Full extracted report text";
+	pdfSidebar.appendChild(pagesLabel);
+
+	const pagesContainer = document.createElement("div");
+	pagesContainer.className = "pdf-pages";
+	const pageMap = new Map();
+
+	if (!pages.length) {
+		const emptyState = document.createElement("div");
+		emptyState.className = "result-item";
+		emptyState.innerHTML = `<strong>No report pages available</strong><div>The PDF was not downloaded or its text could not be extracted.</div>`;
+		pagesContainer.appendChild(emptyState);
+	} else {
+		pages.forEach((page) => {
+			const pageCard = document.createElement("article");
+			pageCard.className = "pdf-page";
+			pageCard.id = `pdf-page-${page.page}`;
+			const pageTitle = document.createElement("div");
+			pageTitle.className = "pdf-page-number";
+			pageTitle.textContent = `Page ${page.page}`;
+			const pageText = document.createElement("pre");
+			pageText.className = "pdf-page-text";
+			pageText.textContent = page.text || "(No text extracted for this page)";
+			pageCard.appendChild(pageTitle);
+			pageCard.appendChild(pageText);
+			pagesContainer.appendChild(pageCard);
+			pageMap.set(page.page, pageCard);
+		});
+	}
+
+	if (sourcePages.length) {
+		const sourceChips = document.createElement("div");
+		sourceChips.className = "pdf-chip-list";
+		sourcePages.forEach((pageNumber) => {
+			const chip = document.createElement("button");
+			chip.type = "button";
+			chip.className = "pdf-chip pdf-chip-button";
+			chip.textContent = `Go to page ${pageNumber}`;
+			chip.addEventListener("click", () => {
+				const target = pageMap.get(pageNumber);
+				if (target) {
+					pagesContainer.querySelectorAll(".pdf-page").forEach((item) => item.classList.remove("pdf-page-active"));
+					target.classList.add("pdf-page-active");
+					target.scrollIntoView({ behavior: "smooth", block: "center" });
+				}
+			});
+			sourceChips.appendChild(chip);
+		});
+		pdfSidebar.appendChild(sourceChips);
+	}
+
+	pdfSidebar.appendChild(pagesContainer);
+}
+
+function renderDraftCard(result) {
+	draftCard.innerHTML = "";
+	const draftText = result.final_outreach_draft || result.outreach_email || "";
+	const gapValue = result.gap_calculation || result.gap || "N/A";
+	const status = (result.compliance_status || "").toUpperCase();
+	const gapDetected = gapValue && gapValue !== "0.00" && gapValue !== "N/A";
+	const shouldShowDraft = draftText && (gapDetected || status === "NON-COMPLIANT");
+
+	if (!shouldShowDraft) {
+		draftCard.classList.add("hidden");
+		return;
+	}
+
+	draftCard.classList.remove("hidden");
+	draftCard.innerHTML = `
+		<h3>Drafted outreach email</h3>
+		<pre>${escapeHtml(draftText)}</pre>
+		<div class="draft-note">Gap detected: ${escapeHtml(gapValue)}</div>
+	`;
 }
 
 function getComplianceBadge(status) {
@@ -58,6 +178,43 @@ function getComplianceBadge(status) {
 	}
 
 	return `<span style="display:inline-block;padding:0.25rem 0.6rem;border-radius:999px;font-size:0.9rem;font-weight:600;background:${background};color:${color};">${normalizedStatus}</span>`;
+}
+
+function deriveOpportunityInsight(result, metrics) {
+	const status = (result.compliance_status || "N/A").toUpperCase();
+	const foundMetricCount = (metrics || []).filter((metric) =>
+		metric && metric.extracted_metric_value && metric.extracted_metric_value !== "N/A"
+	).length;
+
+	let baseScore = 50;
+	let label = "Opportunity";
+	let advice = "Use this insight to craft a targeted outreach message.";
+
+	switch (status) {
+		case "COMPLIANT":
+			baseScore = 80;
+			label = "Compliance strength";
+			advice = "This company appears compliant. Position outreach as a partnership to accelerate sustainability leadership.";
+			break;
+		case "NON-COMPLIANT":
+			baseScore = 30;
+			label = "High priority";
+			advice = "This company may face regulatory risk. Lead with an urgent, value-added compliance support offer.";
+			break;
+		case "COMPLIANCE OPAQUE - AUDIT REQUIRED":
+			baseScore = 55;
+			label = "Audit insight";
+			advice = "Key data is missing. Suggest a rapid compliance review to clarify the gap and next steps.";
+			break;
+		case "NO STATUTORY MANDATE":
+			baseScore = 65;
+			label = "Early-stage prospect";
+			advice = "No current mandate detected. Offer advisory support to move ahead of future regulation.";
+			break;
+	}
+
+	const score = Math.min(100, baseScore + foundMetricCount * 10);
+	return { score, label, advice, metricsFound: foundMetricCount };
 }
 
 function renderMetricScorecard(metrics) {
@@ -131,13 +288,34 @@ function renderResult(data) {
 	detailsContainer.className = "result-grid";
 	detailsContainer.appendChild(createResultField("Region", result.target_region));
 	detailsContainer.appendChild(createResultField("Sector", result.target_sector));
+	detailsContainer.appendChild(createResultField("Gap calculation", result.gap_calculation || "N/A"));
 	detailsContainer.appendChild(createResultField("CSO Name", result.cso_name));
 	detailsContainer.appendChild(createResultField("Designation", result.designation));
 	detailsContainer.appendChild(createResultField("Email", result.email));
 	detailsContainer.appendChild(createResultField("Regulatory Findings", result.raw_laws_text));
-	detailsContainer.appendChild(createResultField("Outreach Draft", result.final_outreach_draft));
 	resultDetails.appendChild(detailsContainer);
 
+	const insightTarget = document.getElementById("insight-card");
+	const insight = deriveOpportunityInsight(result, data.metrics || result.metric_results || []);
+	insightTarget.className = "insight-card";
+	insightTarget.innerHTML = `
+		<div class="insight-header">
+			<h3>${insight.label}</h3>
+			<div class="insight-score">${insight.score}% chance of strong fit</div>
+		</div>
+		<div class="insight-meter"><span style="width:${insight.score}%"></span></div>
+		<p>${insight.advice}</p>
+		<div class="insight-chips">
+			<div class="insight-chip">${insight.metricsFound} metric${insight.metricsFound === 1 ? "" : "s"} found</div>
+			<div class="insight-chip">${result.discovered_company || "Company pending"}</div>
+			<div class="insight-chip">${result.target_region} • ${result.target_sector}</div>
+		</div>
+	`;
+
+	renderDraftCard(result);
+	renderPdfSidebar(result);
+	pdfSidebar.classList.remove("hidden");
+	insightTarget.classList.remove("hidden");
 	toggleDetailsButton.textContent = "Show details";
 	resultDetails.classList.add("hidden");
 
@@ -183,13 +361,30 @@ function renderNotifications(notifications) {
 	});
 }
 
+async function parseJsonResponse(response) {
+	const text = await response.text();
+	if (!text) {
+		return null;
+	}
+	try {
+		return JSON.parse(text);
+	} catch (parseError) {
+		throw new Error(`Invalid JSON response: ${text}`);
+	}
+}
+
 async function loadHistory() {
 	try {
 		const response = await fetch(`${apiBase}/api/notifications`);
-		const notifications = await response.json();
+		if (!response.ok) {
+			const body = await response.text();
+			throw new Error(`Notifications load failed (${response.status}): ${body}`);
+		}
+		const notifications = await parseJsonResponse(response) || [];
 		renderNotifications(notifications);
 	} catch (error) {
-		setStatus("Unable to load notification history.", "error");
+		setStatus(`Unable to load notification history: ${error.message}`, "error");
+		console.error("Notification history error:", error);
 	}
 }
 
@@ -216,17 +411,28 @@ async function runSearch(event) {
 		});
 
 		if (!response.ok) {
-			const error = await response.json();
-			throw new Error(error.detail || "Server error");
+			const body = await response.text();
+			let details = body;
+			try {
+				const parsed = JSON.parse(body);
+				details = parsed.detail || parsed.message || JSON.stringify(parsed);
+			} catch (parseError) {
+				// keep raw text if not valid JSON
+			}
+			throw new Error(details || `Server error (${response.status})`);
 		}
 
-		const data = await response.json();
+		const data = await parseJsonResponse(response);
+		if (!data) {
+			throw new Error("Empty response from server.");
+		}
 		renderResult(data);
 		if (data.already_notified) {
 			renderNotifications([data.notification]);
 		}
 	} catch (error) {
-		setStatus(error.message, "error");
+		setStatus(`Search failed: ${error.message}`, "error");
+		console.error("Search error:", error);
 	}
 }
 
@@ -253,18 +459,24 @@ async function approveNotification() {
 			body: JSON.stringify(payload),
 		});
 		if (!response.ok) {
-			const error = await response.json();
-			throw new Error(error.detail || "Unable to save notification");
+			const body = await response.text();
+			let details = body;
+			try {
+				const parsed = JSON.parse(body);
+				details = parsed.detail || parsed.message || JSON.stringify(parsed);
+			} catch (parseError) {}
+			throw new Error(details || `Unable to save notification (${response.status})`);
 		}
-		const result = await response.json();
+		const result = await parseJsonResponse(response);
 		setStatus("Notification saved successfully.");
 		loadHistory();
 		approveButton.textContent = "Already notified — no action needed";
 		approveButton.disabled = true;
 	} catch (error) {
-		setStatus(error.message, "error");
+		setStatus(`Save failed: ${error.message}`, "error");
 		approveButton.disabled = false;
 		approveButton.textContent = "Approve & Save Notification";
+		console.error("Approve error:", error);
 	}
 }
 
