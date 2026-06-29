@@ -49,6 +49,27 @@ function createResultField(title, value) {
 	return wrapper;
 }
 
+function createOverviewCard(title, content) {
+	const card = document.createElement("div");
+	card.className = "overview-card";
+
+	const titleElement = document.createElement("div");
+	titleElement.className = "overview-card-title";
+	titleElement.textContent = title;
+
+	const contentElement = document.createElement("div");
+	contentElement.className = "overview-card-content";
+	if (typeof content === "string" && content.startsWith("<span")) {
+		contentElement.innerHTML = content;
+	} else {
+		contentElement.textContent = content || "N/A";
+	}
+
+	card.appendChild(titleElement);
+	card.appendChild(contentElement);
+	return card;
+}
+
 function escapeHtml(value) {
 	const div = document.createElement("div");
 	div.textContent = value || "";
@@ -277,12 +298,12 @@ function renderResult(data) {
 	const complianceStatus = data.compliance_status || result.compliance_status || "N/A";
 	const auditReasoning = data.audit_reasoning || result.audit_reasoning || "N/A";
 
-	const summaryMeta = document.createElement("div");
-	summaryMeta.className = "summary-meta";
-	summaryMeta.appendChild(createResultField("Company", result.discovered_company));
-	summaryMeta.appendChild(createResultField("Compliance Status", getComplianceBadge(complianceStatus)));
-	summaryMeta.appendChild(createResultField("Audit Reasoning", auditReasoning));
-	resultSummary.appendChild(summaryMeta);
+	const overviewContainer = document.createElement("div");
+	overviewContainer.className = "overview-panel";
+	overviewContainer.appendChild(createOverviewCard("Company", result.discovered_company));
+	overviewContainer.appendChild(createOverviewCard("Compliance Status", getComplianceBadge(complianceStatus)));
+	overviewContainer.appendChild(createOverviewCard("Audit Reasoning", auditReasoning));
+	resultSummary.appendChild(overviewContainer);
 
 	const detailsContainer = document.createElement("div");
 	detailsContainer.className = "result-grid";
