@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import Any, Dict, List, TypedDict
 
 
 class AgentState(TypedDict, total=False):
@@ -8,14 +8,13 @@ class AgentState(TypedDict, total=False):
 
     # Agent 1 Outputs (Regulatory)
     raw_laws_text: str
-    primary_metric_name: str
     numeric_target: str
     target_type: str
 
     # Agent 2 Outputs (Corporate & Prospecting)
     discovered_company: str
-    extracted_metric_value: str
-    metric_unit: str
+    reporting_year: str
+    metric_results: List[Dict[str, Any]]
     cso_name: str
     designation: str
     email: str
@@ -26,6 +25,7 @@ class AgentState(TypedDict, total=False):
     audit_reasoning: str
 
     # Agent 4 Outputs (Outreach)
+    outreach_email: str
     final_outreach_draft: str
     outreach_email_subject: str
     outreach_email_body: str
