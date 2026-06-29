@@ -12,7 +12,6 @@ const approveButton = document.getElementById("approve-button");
 const historySection = document.getElementById("history-section");
 const historyContent = document.getElementById("history-content");
 const emailPreview = document.getElementById("email-preview");
-const previewRecipient = document.getElementById("preview-recipient");
 const previewSubject = document.getElementById("preview-subject");
 const previewBody = document.getElementById("preview-body");
 const previewWhySend = document.getElementById("preview-why-send");
@@ -52,6 +51,43 @@ function isValidEmail(email) {
   );
 }
 
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function formatEmailBody(body) {
+  if (!body) {
+    return "<p>No draft available.</p>";
+  }
+
+  const escaped = escapeHtml(body.trim());
+  return escaped
+    .split(/\n{2,}/)
+    .map((block) => `<p>${block.replace(/\n/g, "<br />")}</p>`)
+    .join("");
+}
+
+function buildEmailDraft(result, draft) {
+  let body = String(draft || "").trim();
+  if (!body) {
+    body = "I wanted to share a concise compliance review of the current risk outlook and recommended next steps.";
+  }
+
+  const recipientName = result.cso_name ? result.cso_name.split(" ")[0] : "";
+  if (!/^(dear|hello|hi)\b/i.test(body)) {
+    body = `${recipientName ? `Dear ${recipientName},\n\n` : "Hello,\n\n"}${body}`;
+  }
+
+  if (!/(best regards|regards|sincerely|thanks|thank you)/i.test(body)) {
+    body = `${body}\n\nBest regards,\n[Your Name]\n[Your Company]`;
+  }
+
+  return body;
+}
+
 function updateSendButtonState() {
   const recipient = previewRecipientInput.value.trim();
   const validRecipient = isValidEmail(recipient);
@@ -79,6 +115,31 @@ function createResultField(title, value) {
   return wrapper;
 }
 
+function formatMetricValue(value, unit) {
+  const metricValue = value || "N/A";
+  const metricUnit = unit ? ` ${unit}` : "";
+  return `${metricValue}${metricUnit}`;
+}
+
+function getComplianceBadge(status) {
+  const normalizedStatus = (status || "N/A").toUpperCase();
+  let background = "#e0f2fe";
+  let color = "#0c4a6e";
+
+  if (normalizedStatus === "COMPLIANT") {
+    background = "#dcfce7";
+    color = "#166534";
+  } else if (normalizedStatus === "NON-COMPLIANT") {
+    background = "#fee2e2";
+    color = "#991b1b";
+  } else if (normalizedStatus === "COMPLIANCE OPAQUE - AUDIT REQUIRED") {
+    background = "#fef3c7";
+    color = "#92400e";
+  }
+
+  return `<span style="display:inline-block;padding:0.25rem 0.6rem;border-radius:999px;font-size:0.9rem;font-weight:600;background:${background};color:${color};">${normalizedStatus}</span>`;
+}
+
 function renderResult(data) {
   resultSummary.innerHTML = "";
   resultDetails.innerHTML = "";
@@ -88,37 +149,30 @@ function renderResult(data) {
   const alreadyNotified = data.already_notified;
   currentResult = result;
 
+  const metricName = data.primary_metric_name || result.primary_metric_name || "Metric";
+  const metricValue = data.extracted_metric_value || result.extracted_metric_value || "N/A";
+  const metricUnit = data.metric_unit || result.metric_unit || "";
+  const targetValue = data.numeric_target || result.numeric_target || "N/A";
+  const targetType = data.target_type || result.target_type || "Target";
+  const complianceStatus = data.compliance_status || result.compliance_status || "N/A";
+  const auditReasoning = data.audit_reasoning || result.audit_reasoning || "N/A";
+  const outreachDraft = result.final_outreach_draft || "N/A";
+
   currentCanSend = Boolean(data.should_send_email);
-
-  currentOutreach = {
-    recipient: isValidEmail(result.email) ? result.email : "",
-    sender: "",
-    subject: result.outreach_email_subject || "",
-    body: result.outreach_email_body || result.final_outreach_draft || "",
-  };
-
-  previewSenderInput.value = currentOutreach.sender;
-  previewRecipientInput.value = currentOutreach.recipient;
-  previewSubject.textContent = currentOutreach.subject || "N/A";
-  previewBody.innerHTML = currentOutreach.body || "<p>No draft available.</p>";
-  previewWhySend.textContent = result.audit_reasoning || "This email is intended to capture a key regulatory issue and recommend engagement based on the compliance gap.";
-  previewMajorIssue.textContent = result.compliance_status || "No major issue identified.";
-  emailPreview.classList.remove("hidden");
-
-  updateSendButtonState();
-
-  if (!currentCanSend) {
-    setStatus("Email send disabled: prospect does not meet outreach criteria.", "error");
-  } else if (!isValidEmail(currentOutreach.recipient)) {
-    setStatus("Please enter a valid recipient address before sending.", "error");
-  } else {
-    clearStatus();
-  }
+  currentOutreach = currentCanSend
+    ? {
+        subject: result.discovered_company
+          ? `Compliance review: ${result.discovered_company}`
+          : "Compliance risk review",
+        body: buildEmailDraft(result, outreachDraft),
+      }
+    : null;
 
   resultSummary.appendChild(createResultField("Company", result.discovered_company));
-  resultSummary.appendChild(createResultField("Emission Metric", result.company_emission_metric));
-  resultSummary.appendChild(createResultField("Compliance Status", result.compliance_status));
-  resultSummary.appendChild(createResultField("Audit Reasoning", result.audit_reasoning));
+  resultSummary.appendChild(createResultField(metricName, formatMetricValue(metricValue, metricUnit)));
+  resultSummary.appendChild(createResultField("Target", `${targetValue}${targetType ? ` (${targetType})` : ""}`));
+  resultSummary.appendChild(createResultField("Compliance Status", getComplianceBadge(complianceStatus)));
+  resultSummary.appendChild(createResultField("Audit Reasoning", auditReasoning));
   resultSummary.appendChild(createResultField("Contact", `${result.cso_name || "N/A"} • ${result.email || "N/A"}`));
 
   const detailsContainer = document.createElement("div");
@@ -129,8 +183,26 @@ function renderResult(data) {
   detailsContainer.appendChild(createResultField("Designation", result.designation));
   detailsContainer.appendChild(createResultField("Email", result.email));
   detailsContainer.appendChild(createResultField("Regulatory Findings", result.raw_laws_text));
-  detailsContainer.appendChild(createResultField("Outreach Draft", result.final_outreach_draft));
+  detailsContainer.appendChild(createResultField("Outreach Draft", outreachDraft));
   resultDetails.appendChild(detailsContainer);
+
+  if (currentCanSend) {
+    emailPreview.classList.remove("hidden");
+    previewSubject.textContent = currentOutreach.subject;
+    previewBody.innerHTML = formatEmailBody(currentOutreach.body);
+    previewWhySend.textContent = result.compliance_status
+      ? `The compliance status is ${result.compliance_status}. This outreach is recommended because the prospect needs follow-up.`
+      : "This outreach is recommended because the prospect needs follow-up.";
+    previewMajorIssue.textContent = result.raw_laws_text || result.audit_reasoning || "N/A";
+    previewRecipientInput.value = result.email || "";
+    previewSenderInput.value = "";
+    updateSendButtonState();
+  } else {
+    emailPreview.classList.add("hidden");
+    currentOutreach = null;
+    sendEmailButton.disabled = true;
+    sendEmailButton.textContent = "Not eligible to send";
+  }
 
   toggleDetailsButton.textContent = "Show details";
   resultDetails.classList.add("hidden");

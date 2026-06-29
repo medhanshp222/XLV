@@ -30,7 +30,8 @@ def _extract_text_content(content: object) -> str:
 def agent_1_regulatory_tracker(state: AgentState) -> AgentState:
     """
     Agent 1: Uses a native web search tool bound to Gemini to discover
-    and parse 2026 environmental mandates.
+    and parse India's FY 2026-27 Renewable Consumption Obligation (RCO)
+    and Energy Storage Obligation (ESO) mandates.
     """
     llm = ChatGoogleGenerativeAI(
         model="gemini-3.1-flash-lite",
@@ -46,10 +47,12 @@ def agent_1_regulatory_tracker(state: AgentState) -> AgentState:
     llm_with_tools = llm.bind_tools([web_search_tool])
 
     prompt = (
-        f"You are a compliance automation bot. Find the official 2026 environmental emission "
-        f"limits, thresholds, or caps for the {state['target_sector']} sector in {state['target_region']}. "
-        f"Use your search tool to fetch real-time data. Summarize the exact numeric limits "
-        f"and provide the legal citation source."
+        "You are a compliance automation bot focused on India's power-sector compliance mandates. "
+        f"Find the official Renewable Consumption Obligation (RCO) and Energy Storage Obligation (ESO) "
+        "percentage targets mandated by the Ministry of Power for the current fiscal year FY 2026-27. "
+        f"For the {state['target_sector']} sector context, use the official India policy sources and extract the exact numeric percentages clearly, "
+        "for example: 'RCO target: 35.95%, ESO target: 2.5%'. "
+        "Summarize the exact targets and provide the legal citation source."
     )
 
     messages = [HumanMessage(content=prompt)]

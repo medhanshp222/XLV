@@ -59,8 +59,12 @@ def api_run(request: RunRequest) -> Dict[str, Any]:
         "target_region": request.region,
         "target_sector": request.sector,
         "raw_laws_text": "",
+        "primary_metric_name": "",
+        "numeric_target": "",
+        "target_type": "",
         "discovered_company": "",
-        "company_emission_metric": "",
+        "extracted_metric_value": "",
+        "metric_unit": "",
         "cso_name": "",
         "designation": "",
         "email": "",
@@ -85,8 +89,16 @@ def api_run(request: RunRequest) -> Dict[str, Any]:
 
     result = {
         "result": final_state,
+        "company": company,
         "already_notified": already_notified,
         "notification": notification,
+        "primary_metric_name": final_state.get("primary_metric_name", ""),
+        "numeric_target": final_state.get("numeric_target", ""),
+        "target_type": final_state.get("target_type", ""),
+        "extracted_metric_value": final_state.get("extracted_metric_value", ""),
+        "metric_unit": final_state.get("metric_unit", ""),
+        "compliance_status": final_state.get("compliance_status", ""),
+        "audit_reasoning": final_state.get("audit_reasoning", ""),
     }
 
     def parse_metric(value: str) -> Optional[float]:

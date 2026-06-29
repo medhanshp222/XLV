@@ -144,7 +144,8 @@ label {
   color: #334155;
 }
 
-input {
+input,
+select {
   width: 100%;
   padding: 14px 16px;
   border: 1px solid #cbd5e1;
@@ -153,6 +154,15 @@ input {
   font-size: 1rem;
   background: #f8fafc;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #475569 50%),
+    linear-gradient(135deg, #475569 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(1em + 4px), calc(100% - 13px) calc(1em + 4px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
 }
 
 .email-input {
@@ -491,6 +501,156 @@ button:disabled {
   .details-grid,
   .summary-grid,
   .history-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Modern polished theme overrides */
+body {
+  background: radial-gradient(circle at top left, #08131f 0%, #0d1726 38%, #08131f 100%);
+  color: #e2e8f0;
+}
+
+.page-shell {
+  padding: 48px 18px 64px;
+}
+
+.hero-card {
+  background: radial-gradient(circle at top right, rgba(96, 165, 250, 0.16), transparent 25%), linear-gradient(135deg, #0f172a, #111827);
+  border: none;
+  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.32);
+}
+
+.hero-card::before,
+.hero-card::after {
+  background: rgba(96, 165, 250, 0.18);
+}
+
+.hero-card h1 {
+  color: #f8fafc;
+  font-size: clamp(2.4rem, 3vw, 3.6rem);
+  letter-spacing: -0.04em;
+}
+
+.hero-copy {
+  color: rgba(226, 232, 240, 0.82);
+  font-size: 1.05rem;
+  max-width: 660px;
+}
+
+.hero-badge {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e0e7ff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.grid-layout {
+  gap: 24px;
+}
+
+.card,
+.status-card {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.card-heading h2,
+.section-header h2,
+.hero-card .eyebrow {
+  color: #f8fafc;
+}
+
+label {
+  color: #cbd5e1;
+}
+
+input,
+.email-input {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.25);
+}
+
+input::placeholder,
+.email-input::placeholder {
+  color: rgba(226, 232, 240, 0.5);
+}
+
+input:focus,
+.email-input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.12);
+}
+
+button {
+  border-radius: 999px;
+  min-height: 52px;
+  font-weight: 700;
+}
+
+button.primary-button {
+  background: linear-gradient(135deg, #6366f1, #0ea5e9);
+  box-shadow: 0 18px 30px rgba(14, 165, 233, 0.22);
+}
+
+.secondary-button {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.result-item,
+.notification-hit,
+.email-preview {
+  background: rgba(15, 23, 42, 0.86);
+  border-color: rgba(148, 163, 184, 0.14);
+  color: #e2e8f0;
+}
+
+.result-item div,
+.notification-hit div,
+.email-body div {
+  color: #cbd5e1;
+}
+
+.email-body {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(148, 163, 184, 0.12);
+}
+
+.email-meta-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(148, 163, 184, 0.12);
+}
+
+.preview-description {
+  color: rgba(226, 232, 240, 0.78);
+}
+
+.status-card {
+  background: rgba(30, 58, 138, 0.12);
+  border-color: rgba(96, 165, 250, 0.16);
+}
+
+.status {
+  background: rgba(14, 165, 233, 0.08);
+  color: #bfdbfe;
+}
+
+.email-preview {
+  margin-top: 24px;
+  padding: 30px;
+}
+
+.preview-actions {
+  justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+  .email-grid,
+  .email-metadata {
     grid-template-columns: 1fr;
   }
 }
