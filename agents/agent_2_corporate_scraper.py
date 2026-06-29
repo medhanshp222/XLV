@@ -128,14 +128,14 @@ def agent_2_corporate_scraper(state: AgentState) -> AgentState:
                     pdf_url = tool_call.get("args", {}).get("pdf_url")
                     query = tool_call.get("args", {}).get("query")
                     tool_output = read_sustainability_report.invoke({"pdf_url": pdf_url, "query": query})
-                    # 🔴 DEBUG PRINT
-                    print(f"\n🔍 DEBUG - RAW PDF TOOL OUTPUT:\n{tool_output}\n")
+                    
                 else:
                     tool_output = web_search_tool_agent2.invoke(tool_call["args"])
             except Exception as exc:
                 tool_output = f"Tool execution failed: {exc}"
             
             messages.append(ToolMessage(content=str(tool_output), tool_call_id=tool_call["id"]))
+    
 
     wake_up_prompt = (
         "All tools have finished executing. Map the tool output into the extracted_metrics list in the schema. "
@@ -152,16 +152,21 @@ def agent_2_corporate_scraper(state: AgentState) -> AgentState:
     missing_metrics = [
         metric for metric in draft_metric_results if _is_missing_metric_value(metric.get("extracted_metric_value"))
     ]
-    successful_pages = sorted(
-        {
-            page
-            for metric in draft_metric_results
-            if not _is_missing_metric_value(metric.get("extracted_metric_value"))
-            for page in _extract_page_numbers(metric.get("source_page"))
-        }
-    )
-    print(f"DEBUG: Found {len(missing_metrics)} missing metrics.")
-    print(f"DEBUG: Found {len(successful_pages)} successful source pages.")
+    successful_pages = []
+    # 🔴 IMPROVED REGEX: Handles newlines and varied whitespace
+    # This looks for "Source Pages:" followed by brackets containing numbers
+    pattern = r"Source Pages:\s*\[([\d,\s]+)\]"
+    
+    for msg in reversed(messages):
+        content_str = str(msg.content)
+        match = re.search(pattern, content_str, re.IGNORECASE)
+        if match:
+            pages_str = match.group(1)
+            # Split by comma, strip spaces, convert to int
+            successful_pages = sorted({int(p.strip()) for p in pages_str.split(",") if p.strip().isdigit()})
+            break 
+            
+  
 
     if missing_metrics and successful_pages:
         print("LOG: Triggering Precision Harvest...")
@@ -175,20 +180,27 @@ def agent_2_corporate_scraper(state: AgentState) -> AgentState:
             for candidate_page in (page_number - 1, page_number, page_number + 1):
                 if candidate_page >= 0:
                     pages_to_harvest.add(candidate_page)
-
+           
         sorted_pages_to_harvest = sorted(pages_to_harvest)
         full_page_context = []
-        for page_number in sorted_pages_to_harvest:
+                
+        for human_page in sorted_pages_to_harvest:
             try:
-                page_text = read_sustainability_report_by_page.invoke({"page_number": int(page_number)})
+                # 1. Convert to 0-based ONLY for the PDF tool to prevent crashes/skips
+                machine_index = human_page - 1
+                page_text = read_sustainability_report_by_page.invoke({"page_number": int(machine_index)})
+                        
+                    # 2. Use the exact human page number for the text file logging
                 if page_text and page_text.strip():
-                    full_page_context.append(f"--- START PAGE {page_number} ---\n{page_text}\n--- END PAGE {page_number} ---")
+                    full_page_context.append(f"--- START PAGE {human_page} ---\n{page_text}\n--- END PAGE {human_page} ---")
+                else:
+                    full_page_context.append(f"--- START PAGE {human_page} ---\n[WARNING: PDF LOADER EXTRACTED ZERO TEXT]\n--- END PAGE {human_page} ---")
+                            
             except Exception as exc:
-                full_page_context.append(f"[Page {page_number}] ERROR: {exc}")
-
+                    full_page_context.append(f"[Page {human_page}] ERROR: {exc}")
         if full_page_context:
             precision_context = "\n\n".join(full_page_context)
-            print(f"DEBUG: Harvested {len(precision_context)} characters for the LLM to read.")
+            
             
             # 2. THE FIX: A highly aggressive, focused prompt
             precision_harvest_prompt = HumanMessage(
@@ -198,7 +210,9 @@ def agent_2_corporate_scraper(state: AgentState) -> AgentState:
                     f"CRITICAL RULES:\n"
                     f"1. YOU MUST NOT change any metrics that were previously found. Retain the existing values for the ones not listed above.\n"
                     f"2. Look at EVERY SINGLE LINE of the provided text for the missing metrics.\n"
-                    f"3. If a missing metric is genuinely not present in this text, return N/A.\n\n"
+                    f"3. CRITICAL PAGE RULE: Rely ONLY on the '--- START PAGE X ---' headers provided below. "
+                    f"IGNORE any printed page numbers (e.g., 'Page 204') found in the document text—they are often misleading.\n"
+                    f"4. If a missing metric is genuinely not present in this text, return N/A.\n\n"
                     f"Text Context:\n{precision_context}"
                 )
             )
